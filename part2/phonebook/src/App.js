@@ -4,6 +4,7 @@ import PersonsForm from './components/PersonsForm'
 import Filter from './components/Filter'
 import axios from 'axios'
 import contactService from './services/contactService'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -11,6 +12,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filteredPersons, setFilteredPersons] = useState(persons);
   const [filter, setFilter] = useState('')
+  const [notification, setNotification ] = useState("Message testing...")
 
   useEffect(() => {
     contactService
@@ -37,6 +39,14 @@ const App = () => {
     setNewName('');
     setNewNumber('');
   }
+
+  const showNotification = (message) => {
+    setNotification(message)
+    setTimeout(() => {
+      setNotification(null)
+    }, 5000)
+  }
+
   const addContact = (event) => {
     event.preventDefault();
 
@@ -63,6 +73,7 @@ const App = () => {
             setPersons(persons.map(person =>
               person.id !== existingPerson.id ? person : response.data
             ));
+            showNotification(`Added ${contactObject.name}`)
             resetContact();
           });
       }
@@ -73,6 +84,7 @@ const App = () => {
     .then((returnedContact) => {
       setPersons(persons.concat(returnedContact))
     })
+    showNotification(`Added ${contactObject.name}`)
    
     resetContact()
     console.log(newName, newNumber);
@@ -87,7 +99,9 @@ const App = () => {
         .then(() => {
           setPersons(persons.filter(person => person.id !== id));
         })
-        .catch(error => console.log('Error to delete', error));
+        .catch(error => {
+          showNotification(`Information of ${name} has already been removed from server`)
+        });
     }
   };
 
@@ -99,9 +113,11 @@ const App = () => {
     setNewNumber(event.target.value)
   }
 
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification}/>
       <Filter onChange={filterContact}/>
       <h2>Add a new</h2>
       <PersonsForm 
